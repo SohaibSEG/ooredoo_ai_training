@@ -6,7 +6,7 @@ pydantic-settings
 email-validator
 alembic
 python-jose
-passlib[bcrypt]
+bcrypt
 psycopg[binary]
 pgvector
 python-multipart
