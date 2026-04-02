@@ -68,6 +68,7 @@ def ingest_pdfs(pdf_dir: Path) -> int:
         raise RuntimeError(f"'{pdf_dir}' is not a directory.")
 
     vector_store = build_vector_store()
+    vector_store.delete_collection()
     documents = load_pdf_documents(pdf_dir)
     chunks = chunk_documents(
         documents,

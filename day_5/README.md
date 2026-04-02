@@ -67,6 +67,12 @@ And ingest docs:
 docker compose exec app python -m scripts.ingest
 ```
 
+To clear and re-embed the collection (default behavior), run the same command:
+
+```bash
+docker compose exec app python -m scripts.ingest
+```
+
 Docker compose mounts `../day_4/documents` into the container at `/docs` and overrides `DOCS_PATH` accordingly.
 
 ## API
