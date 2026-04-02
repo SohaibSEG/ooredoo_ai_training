@@ -17,3 +17,4 @@ langchain-core
 langchain-google-genai
 langchain-postgres
 langchain-text-splitters
+pypdf

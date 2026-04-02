@@ -23,7 +23,7 @@ pip install -r requirements.txt
 ```
 
 2. Create `.env` from `.env.example` and adjust values.
-   Make sure `GEMINI_API_KEY` is set.
+   Make sure `GEMINI_API_KEY` and Postgres vars are set.
 
 3. Run Postgres + pgvector:
 
@@ -37,7 +37,7 @@ docker compose up -d db
 alembic upgrade head
 ```
 
-5. Ingest PDFs (from `./documents` by default). This fills the `PGVECTOR_COLLECTION` collection:
+5. Ingest PDFs (from `./documents` by default). This clears and refills the `PGVECTOR_COLLECTION` collection:
 
 ```bash
 python -m scripts.ingest
@@ -55,29 +55,17 @@ uvicorn app.main:app --reload
 docker compose up --build
 ```
 
-Then run migrations in the app container:
-
-```bash
-docker compose exec app alembic upgrade head
-```
-
-And ingest docs:
+Then ingest docs (clears and refills the collection):
 
 ```bash
 docker compose exec app python -m scripts.ingest
 ```
 
-To clear and re-embed the collection (default behavior), run the same command:
-
-```bash
-docker compose exec app python -m scripts.ingest
-```
-
-Docker compose mounts `../day_4/documents` into the container at `/docs` and overrides `DOCS_PATH` accordingly.
+Migrations are run automatically on container startup via `entrypoint.sh`.
 
 ## API
-- `POST /auth/register` → `{email, name, password}`
-- `POST /auth/login` → `{email, password}`
+- `POST /auth/register` → `{email, name, password}` → returns `{user, tokens}`
+- `POST /auth/login` → `{email, password}` → returns `{user, tokens}`
 - `POST /auth/refresh` → `{refresh_token}`
 - `POST /session` → `{title?}`
 - `GET /sessions`
@@ -90,7 +78,7 @@ When you call `PUT /session/{id}`:
 1. Load prompt template
 2. Inject short-term history and long-term memory
 3. Retrieve context from pgvector
-4. Invoke the agent (simple grounded answer in this baseline)
-5. Save assistant response and any extracted long-term memory
+4. Invoke the agent with tools
+5. Save assistant response and any tool-driven long-term memory
 
 To upgrade the agent, adjust `day_5/app/services/agent.py` and the prompt template in `day_5/app/core/system_prompt.txt`.
