@@ -21,3 +21,11 @@ class MessageCreate(BaseModel):
 class MessageOut(BaseModel):
     role: str
     content: str
+
+
+class SessionMessagePage(BaseModel):
+    session_id: UUID
+    total: int
+    limit: int
+    offset: int
+    messages: list[MessageOut]

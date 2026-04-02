@@ -69,6 +69,7 @@ def ingest_pdfs(pdf_dir: Path) -> int:
 
     vector_store = build_vector_store()
     vector_store.delete_collection()
+    vector_store.create_collection()
     documents = load_pdf_documents(pdf_dir)
     chunks = chunk_documents(
         documents,

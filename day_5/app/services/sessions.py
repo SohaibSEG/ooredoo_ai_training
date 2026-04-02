@@ -37,3 +37,19 @@ class SessionService:
             .all()
         )
         return list(reversed(rows))
+
+    def get_messages_page(self, db: Session, session_id, limit: int, offset: int) -> tuple[int, list[Message]]:
+        total = (
+            db.query(Message)
+            .filter(Message.session_id == session_id)
+            .count()
+        )
+        rows = (
+            db.query(Message)
+            .filter(Message.session_id == session_id)
+            .order_by(Message.created_at.asc())
+            .offset(offset)
+            .limit(limit)
+            .all()
+        )
+        return total, rows

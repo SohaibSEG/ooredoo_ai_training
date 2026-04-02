@@ -1,6 +1,6 @@
 from app.schemas.user import UserCreate, UserOut
 from app.schemas.auth import TokenPair, LoginRequest, RefreshRequest, AuthResponse
-from app.schemas.session import SessionCreate, SessionOut, MessageCreate, MessageOut
+from app.schemas.session import SessionCreate, SessionOut, MessageCreate, MessageOut, SessionMessagePage
 
 __all__ = [
     "UserCreate",
@@ -13,4 +13,5 @@ __all__ = [
     "SessionOut",
     "MessageCreate",
     "MessageOut",
+    "SessionMessagePage",
 ]

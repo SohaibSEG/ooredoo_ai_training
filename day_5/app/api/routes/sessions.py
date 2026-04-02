@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_current_user
 from app.core.database import get_db
 from app.models.session import Session as ChatSession
-from app.schemas import SessionCreate, SessionOut, MessageCreate, MessageOut
+from app.schemas import SessionCreate, SessionOut, MessageCreate, MessageOut, SessionMessagePage
 from app.services.sessions import SessionService
 from app.services.agent import RAGService
 
@@ -45,9 +45,32 @@ def send_message(
     if not session or session.user_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Session not found")
 
-    sessions_service.add_message(db, session_id, current_user.id, "user", payload.content)
 
     answer = rag_service.answer(db, current_user.id, session_id, payload.content)
+    sessions_service.add_message(db, session_id, current_user.id, "user", payload.content)
     sessions_service.add_message(db, session_id, current_user.id, "assistant", answer)
 
     return MessageOut(role="assistant", content=answer)
+
+
+@router.get("/session/{session_id}", response_model=SessionMessagePage)
+def get_session(
+    session_id: UUID,
+    limit: int = 20,
+    offset: int = 0,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    session = db.query(ChatSession).filter(ChatSession.id == session_id).first()
+    if not session or session.user_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Session not found")
+
+    total, rows = sessions_service.get_messages_page(db, session_id, limit, offset)
+    messages = [MessageOut(role=row.role, content=row.content) for row in rows]
+    return SessionMessagePage(
+        session_id=session_id,
+        total=total,
+        limit=limit,
+        offset=offset,
+        messages=messages,
+    )
