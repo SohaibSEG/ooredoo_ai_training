@@ -18,6 +18,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - appnet
 
   app:
     build: .
@@ -37,6 +39,11 @@ services:
         condition: service_healthy
     volumes:
       - ./documents:/docs:ro
+    networks:
+      - appnet
 
 volumes:
   pgdata:
+
+networks:
+  appnet:
