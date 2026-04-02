@@ -46,7 +46,7 @@ def get_file_message_history(session_id: str) -> FileChatMessageHistory:
 
 chat = RunnableWithMessageHistory(
     chain,
-    get_in_memroy_message_history,
+    get_file_message_history,
     input_messages_key="input",
     history_messages_key="history",
 )

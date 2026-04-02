@@ -24,7 +24,7 @@ def classify_log(log_message: str) -> str:
     )
     
     response = client.models.generate_content(
-        model="gemini-2.5-flash",
+        model="gemini-3.1-flash-lite-preview",
         contents=f"Classify this log: {log_message}",
         config=config,
     )
@@ -40,7 +40,7 @@ def handle_error_log(log_message: str) -> str:
     )
     
     response = client.models.generate_content(
-        model="gemini-2.5-flash",
+        model="gemini-3.1-flash-lite-preview",
         contents=f"Log: {log_message}",
         config=config,
     )
@@ -55,7 +55,7 @@ def handle_warning_log(log_message: str) -> str:
     )
     
     response = client.models.generate_content(
-        model="gemini-2.5-flash",
+        model="gemini-3.1-flash-lite-preview",
         contents=f"Log: {log_message}",
         config=config,
     )
@@ -70,7 +70,7 @@ def handle_info_log(log_message: str) -> str:
     )
     
     response = client.models.generate_content(
-        model="gemini-2.5-flash",
+        model="gemini-3.1-flash-lite-preview",
         contents=f"Log: {log_message}",
         config=config,
     )
@@ -85,7 +85,7 @@ def handle_debug_log(log_message: str) -> str:
     )
     
     response = client.models.generate_content(
-        model="gemini-2.5-flash",
+        model="gemini-3.1-flash-lite-preview",
         contents=f"Log: {log_message}",
         config=config,
     )

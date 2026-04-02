@@ -47,10 +47,6 @@ def chat_loop():
         resp = client.models.generate_content(
             model="gemini-2.5-flash",
             contents=contents,
-            config=types.GenerateContentConfig(
-                temperature=0.7,
-                max_output_tokens=150,
-            ),
         )
 
         assistant_text = resp.text.strip()

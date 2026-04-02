@@ -76,4 +76,6 @@ result = chain.invoke({
 
 # 9) Print the structured result.
 #    Pydantic models have a nice `model_dump()` method to convert to dicts.
-print(result)
+print(result.urgency) 
+print(result.category)
+print(result.summary)

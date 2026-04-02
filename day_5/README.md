@@ -1,173 +1,90 @@
-# Day 5 — FastAPI Application
+# Day 5 - Agentic RAG API (FastAPI + Postgres + pgvector)
 
-FastAPI application demonstrating routes, input/output validation with Pydantic, and a weather agent API based on Day 3.
+This day replaces the old content with a clean, modular FastAPI project that demonstrates:
+- JWT access/refresh auth
+- Session-based chat
+- Short-term memory (last N messages)
+- Long-term memory (per user)
+- RAG over ingested documents stored in pgvector
 
-## Prerequisites
+## Structure
+- `app/` FastAPI app
+- `alembic/` migrations
+- `scripts/ingest.py` document ingestion
+- `docker-compose.yml` Postgres + pgvector + app
 
-- Python 3.8+
-- `.env` file with `GEMINI_API_KEY=...`
-
-## Setup
-
-1. **Create and activate a virtual environment** (recommended to use `.venv` in this directory):
+## Quick Start (local)
+1. Create a venv and install deps:
 
 ```bash
-cd day_5
 python -m venv .venv
-
-# On macOS/Linux:
 source .venv/bin/activate
-
-# On Windows:
-.venv\Scripts\activate
-```
-
-2. **Install dependencies**:
-
-```bash
 pip install -r requirements.txt
 ```
 
-3. **Set up environment variables**:
+2. Create `.env` from `.env.example` and adjust values.
+   Make sure `GEMINI_API_KEY` is set.
 
-Create a `.env` file in the `day_5` directory:
-
-```
-GEMINI_API_KEY=your_gemini_api_key_here
-```
-
-## Running the Application
-
-Start the FastAPI server:
+3. Run Postgres + pgvector:
 
 ```bash
-python main.py
+docker compose up -d db
 ```
 
-Or using uvicorn directly:
+4. Run migrations:
 
 ```bash
-uvicorn main:app --reload
+alembic upgrade head
 ```
 
-The API will be available at:
-- API: http://localhost:8000
-- Interactive docs: http://localhost:8000/docs
-- Alternative docs: http://localhost:8000/redoc
+5. Ingest PDFs (from `./documents` by default). This fills the `PGVECTOR_COLLECTION` collection:
 
-## API Endpoints
-
-### Root
-- `GET /` - API information and available endpoints
-
-### Health Check
-- `GET /health` - Health check endpoint
-
-### Echo Route
-- `POST /echo` - Simple echo endpoint with Pydantic validation
-  - **Request body:**
-    ```json
-    {
-      "message": "Hello, world!"
-    }
-    ```
-  - **Response:**
-    ```json
-    {
-      "echo": "Hello, world!",
-      "received_at": "2024-01-01T12:00:00"
-    }
-    ```
-
-### Weather Agent Chat
-- `POST /weather/chat` - Weather agent API with conversation memory
-  - **Request body:**
-    ```json
-    {
-      "message": "What's the weather in Paris?",
-      "session_id": "optional-session-id"
-    }
-    ```
-  - **Response:**
-    ```json
-    {
-      "response": "Weather in Paris: Cloudy, 12°C, light rain expected...",
-      "session_id": "session-id-used"
-    }
-    ```
-  - **Note:** If `session_id` is not provided, a new UUID will be generated. Use the same `session_id` to maintain conversation context.
-
-## Features Demonstrated
-
-1. **FastAPI Routes**: Simple REST API endpoints
-2. **Pydantic Validation**: Input/output validation using Pydantic models
-   - Field validation (min_length, max_length)
-   - Type checking
-   - Automatic API documentation
-3. **Weather Agent API**: LangChain agent with:
-   - Tool integration (weather checking)
-   - Session-based memory
-   - Conversation context management
-
-## Testing the API
-
-### Using curl
-
-**Echo endpoint:**
 ```bash
-curl -X POST "http://localhost:8000/echo" \
-  -H "Content-Type: application/json" \
-  -d '{"message": "Hello from curl!"}'
+python -m scripts.ingest
 ```
 
-**Weather chat:**
+6. Start the API:
+
 ```bash
-curl -X POST "http://localhost:8000/weather/chat" \
-  -H "Content-Type: application/json" \
-  -d '{"message": "What is the weather in Dubai?"}'
+uvicorn app.main:app --reload
 ```
 
-**Weather chat with session (for conversation context):**
+## Docker Compose (full stack)
+
 ```bash
-# First message
-curl -X POST "http://localhost:8000/weather/chat" \
-  -H "Content-Type: application/json" \
-  -d '{"message": "What is the weather in Paris?", "session_id": "my-session-123"}'
-
-# Follow-up message (uses same session_id)
-curl -X POST "http://localhost:8000/weather/chat" \
-  -H "Content-Type: application/json" \
-  -d '{"message": "What should I wear?", "session_id": "my-session-123"}'
+docker compose up --build
 ```
 
-### Using the Interactive Docs
+Then run migrations in the app container:
 
-Visit http://localhost:8000/docs to use the Swagger UI for interactive API testing.
-
-## Project Structure
-
-```
-day_5/
-├── main.py              # FastAPI application entry point
-├── requirements.txt     # Python dependencies
-├── README.md           # This file
-├── .env                # Environment variables (create this)
-├── schemas/            # Pydantic models for request/response validation
-│   ├── __init__.py
-│   └── models.py       # EchoRequest, EchoResponse, WeatherChatRequest, WeatherChatResponse
-├── routes/             # API route handlers
-│   ├── __init__.py     # Router aggregation
-│   ├── echo.py         # Echo endpoint
-│   └── weather.py       # Weather agent chat endpoint
-└── generation/         # AI agent and generation logic
-    ├── __init__.py
-    └── agent.py        # Weather agent implementation with LangChain
+```bash
+docker compose exec app alembic upgrade head
 ```
 
-## Notes
+And ingest docs:
 
-- This project is fully decoupled from other days
-- Uses LangChain 1.0 syntax consistent with the rest of the project
-- Session memory is stored in-memory (will be lost on server restart)
-- The weather data is hardcoded for demonstration purposes
+```bash
+docker compose exec app python -m scripts.ingest
+```
 
+Docker compose mounts `../day_4/documents` into the container at `/docs` and overrides `DOCS_PATH` accordingly.
+
+## API
+- `POST /auth/register` → `{email, name, password}`
+- `POST /auth/login` → `{email, password}`
+- `POST /auth/refresh` → `{refresh_token}`
+- `POST /session` → `{title?}`
+- `GET /sessions`
+- `PUT /session/{id}` → `{content}`
+
+All session endpoints require `Authorization: Bearer <access_token>`.
+
+## RAG Flow
+When you call `PUT /session/{id}`:
+1. Load prompt template
+2. Inject short-term history and long-term memory
+3. Retrieve context from pgvector
+4. Invoke the agent (simple grounded answer in this baseline)
+5. Save assistant response and any extracted long-term memory
+
+To upgrade the agent, adjust `day_5/app/services/agent.py` and the prompt template in `day_5/app/core/system_prompt.txt`.
