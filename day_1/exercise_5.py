@@ -46,7 +46,7 @@ def chat_loop():
 
         resp = client.models.generate_content(
             model="gemini-2.5-flash",
-            contents=user_input,
+            contents=contents,
         )
 
         assistant_text = resp.text.strip()
