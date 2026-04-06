@@ -39,21 +39,21 @@ def chat_loop():
             break
 
         # Save user message
-        history.append({'role': 'user', 'content': user_input})
+        # history.append({'role': 'user', 'content': user_input})
 
         # Build a contents string from history and send it each time
-        contents = build_contents_from_history(history) + "\n\nAssistant:"
+        # contents = build_contents_from_history(history) + "\n\nAssistant:"
 
         resp = client.models.generate_content(
             model="gemini-2.5-flash",
-            contents=contents,
+            contents=user_input,
         )
 
         assistant_text = resp.text.strip()
         print("Assistant:", assistant_text)
 
         # Save assistant response to history
-        history.append({'role': 'assistant', 'content': assistant_text})
+        # history.append({'role': 'assistant', 'content': assistant_text})
 
 
 if __name__ == "__main__":
