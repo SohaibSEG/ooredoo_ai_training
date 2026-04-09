@@ -10,19 +10,17 @@ class Settings(BaseSettings):
     )
 
     app_name: str = "day5-agentic-rag"
-    env: str = "dev"
-    secret_key: str = "change-me"
+    secret_key: str = Field(..., description="JWT signing key")
     access_token_expire_minutes: int = 30
     refresh_token_expire_days: int = 7
 
-    database_url: str = "postgresql+psycopg://postgres:postgres@db:5432/agentic"
-    vector_dim: int = 384
+    database_url: str = Field(..., description="SQLAlchemy database URL")
     history_window: int = 6
 
-    docs_path: str = "../day_4/documents"
+    docs_path: str = "./documents"
     embedding_model: str = "gemini-embedding-001"
     chat_model: str = "gemini-2.5-flash"
-    gemini_api_key: str = Field(default="", validation_alias="GEMINI_API_KEY")
+    gemini_api_key: str = Field(..., validation_alias="GEMINI_API_KEY")
     pgvector_collection: str = "day5_documents"
     chunk_size: int = 1000
     chunk_overlap: int = 150
