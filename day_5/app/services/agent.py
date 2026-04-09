@@ -72,11 +72,7 @@ class RAGService:
 
     def _build_agent(self, tools, long_term_memory: str):
         system_template = load_prompt_template()
-        tool_names = ", ".join(t.name for t in tools)
-        tools_text = "\n".join(f"- {t.name}: {t.description}" for t in tools)
         system_prompt = system_template.format(
-            tools=tools_text,
-            tool_names=tool_names,
             long_term_memory=long_term_memory,
         )
         return create_agent(model=self.llm, tools=tools, system_prompt=system_prompt)
