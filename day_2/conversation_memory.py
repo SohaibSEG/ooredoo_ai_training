@@ -20,7 +20,7 @@ llm = ChatGoogleGenerativeAI(
     model="gemini-2.5-flash",
     google_api_key=API_KEY,
     temperature=0.7,
-    max_output_tokens=150,
+   # max_output_tokens=150,
 )
 
 prompt = ChatPromptTemplate.from_messages([
@@ -41,7 +41,7 @@ def get_in_memroy_message_history(session_id: str) -> InMemoryChatMessageHistory
 def get_file_message_history(session_id: str) -> FileChatMessageHistory:
     file_path = Path.cwd() / f"{session_id}_chat_history.json"
     if session_id not in memory_store:
-        memory_store[session_id] = FileChatMessageHistory(file_path=str(file_path))
+        memory_store[session_id] = FileChatMessageHistory(file_path=str(file_path), message_limit=2)
     return memory_store[session_id]
 
 chat = RunnableWithMessageHistory(
